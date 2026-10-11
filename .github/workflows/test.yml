@@ -1,0 +1,19 @@
+name: Tests
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit and shell tests
+        run: node --test *.test.js
+      - name: JavaScript syntax checks
+        run: |
+          for file in *.js; do node --check "$file"; done

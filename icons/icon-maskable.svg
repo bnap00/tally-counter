@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Tally maskable icon</title>
+  <rect x="0" y="0" width="512" height="512" fill="#242320"/>
+  <defs>
+    <clipPath id="safe-circle">
+      <circle cx="256" cy="256" r="200"/>
+    </clipPath>
+  </defs>
+  <g id="essential-tally" clip-path="url(#safe-circle)" fill="#eee9df">
+    <path d="M142 160c0-9 7-16 16-16h18c9 0 16 7 16 16v192c0 9-7 16-16 16h-18c-9 0-16-7-16-16z"/>
+    <path d="M231 160c0-9 7-16 16-16h18c9 0 16 7 16 16v192c0 9-7 16-16 16h-18c-9 0-16-7-16-16z"/>
+    <path d="M320 160c0-9 7-16 16-16h18c9 0 16 7 16 16v192c0 9-7 16-16 16h-18c-9 0-16-7-16-16z"/>
+    <path id="increment" fill="#c56f4b" d="M130 318c-4-8-1-17 7-21l238-117c8-4 17-1 21 7l8 16c4 8 1 17-7 21L159 341c-8 4-17 1-21-7z"/>
+  </g>
+</svg>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta id="theme-color" name="theme-color" content="#eee9df">
+  <meta name="description" content="A focused, offline tally counter.">
+  <meta name="application-name" content="Tally">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <title>Tally</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main id="app">
+    <header class="edge-bar">
+      <p class="wordmark" aria-label="Tally">TLY</p>
+      <p id="mode-status" class="mode-status">Endless</p>
+      <button id="settings-button" class="icon-button" type="button" aria-label="Open settings" aria-haspopup="dialog">
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22">
+          <path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/>
+        </svg>
+      </button>
+    </header>
+
+    <section class="counter-stage" aria-label="Counter">
+      <button id="counter-button" aria-label="Add one. Current value zero." aria-keyshortcuts="Space Enter" type="button">
+        <svg class="progress-ring" viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="progress-rail" cx="60" cy="60" r="57" pathLength="100"/>
+          <circle class="progress-value" cx="60" cy="60" r="57" pathLength="100"/>
+        </svg>
+        <span class="value-wrap">
+          <span id="current-value">0</span>
+        </span>
+      </button>
+      <p id="target-status" class="edge-reading" hidden>
+        <span>Target</span>
+        <strong id="target-value">0</strong>
+      </p>
+      <p id="cycle-status" class="cycle-status" hidden>Cycle 0 of 0</p>
+    </section>
+
+    <footer class="lower-deck">
+      <div class="session-readings" aria-label="Session">
+        <p><span>Total</span><strong id="session-total">0</strong></p>
+        <p><span>Elapsed</span><strong id="elapsed-time">00:00</strong></p>
+      </div>
+      <div class="secondary-actions">
+        <button id="undo-button" class="text-button" type="button" aria-label="Subtract one step" aria-keyshortcuts="- Backspace">Subtract 1</button>
+        <button id="reset-button" class="text-button" type="button" aria-expanded="false" aria-controls="reset-confirmation" aria-keyshortcuts="R">Reset</button>
+      </div>
+      <div id="reset-confirmation" class="reset-confirmation" role="group" aria-label="Confirm reset" hidden>
+        <span>Clear this session?</span>
+        <button id="confirm-reset-button" type="button">Confirm</button>
+        <button id="cancel-reset-button" type="button">Cancel</button>
+      </div>
+    </footer>
+  </main>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <form id="settings-form" method="dialog">
+      <header class="sheet-header">
+        <div>
+          <p class="eyebrow">Instrument setup</p>
+          <h1 id="settings-title">Settings</h1>
+        </div>
+        <button id="close-settings-button" class="icon-button" type="button" aria-label="Close settings">
+          <svg aria-hidden="true" viewBox="0 0 24 24" width="22" height="22"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </header>
+
+      <div class="settings-grid">
+        <label for="mode">Mode</label>
+        <select id="mode" name="mode">
+          <option value="endless">Endless</option>
+          <option value="target">Target</option>
+          <option value="auto">Auto reset</option>
+          <option value="nested">Cycles</option>
+          <option value="countdown">Countdown</option>
+        </select>
+
+        <label for="primary-target">Primary target</label>
+        <input id="primary-target" name="primary-target" type="number" inputmode="numeric" min="1" step="1" placeholder="100">
+
+        <div id="preset-targets" class="presets" aria-label="Preset primary targets">
+          <button type="button" data-target="10">10</button>
+          <button type="button" data-target="25">25</button>
+          <button type="button" data-target="50">50</button>
+          <button type="button" data-target="100">100</button>
+          <button type="button" data-target="500">500</button>
+          <button type="button" data-target="1000">1,000</button>
+        </div>
+
+        <div id="secondary-target-row" class="field-row">
+          <label for="secondary-target">Cycle target</label>
+          <input id="secondary-target" name="secondary-target" type="number" inputmode="numeric" min="1" step="1" placeholder="10">
+        </div>
+
+        <label for="step">Step</label>
+        <input id="step" name="step" type="number" inputmode="numeric" min="1" step="1" value="1">
+
+        <label for="theme">Theme</label>
+        <select id="theme" name="theme">
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+          <option value="black">Black (AMOLED)</option>
+        </select>
+      </div>
+
+      <fieldset class="switches">
+        <legend>Feedback</legend>
+        <label><span>Tap vibration</span><input id="tap-vibration" type="checkbox"></label>
+        <label><span>Target vibration</span><input id="target-vibration" type="checkbox"></label>
+        <label><span>Animation</span><input id="animation" type="checkbox"></label>
+        <label><span>Keep awake</span><input id="keep-awake" type="checkbox"></label>
+      </fieldset>
+    </form>
+  </dialog>
+
+  <p id="live-status" class="visually-hidden" aria-live="polite" aria-atomic="true"></p>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

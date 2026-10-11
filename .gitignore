@@ -1,0 +1,9 @@
+.DS_Store
+coverage/
+*.swp
+*~
+.vercel
+node_modules/
+.env
+.env.*
+!.env.example

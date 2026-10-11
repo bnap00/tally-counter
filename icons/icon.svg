@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Tally</title>
+  <rect x="32" y="32" width="448" height="448" rx="96" fill="#242320"/>
+  <g id="tallies" fill="#eee9df">
+    <path d="M126 144c0-9 7-16 16-16h18c9 0 16 7 16 16v224c0 9-7 16-16 16h-18c-9 0-16-7-16-16z"/>
+    <path d="M218 144c0-9 7-16 16-16h18c9 0 16 7 16 16v224c0 9-7 16-16 16h-18c-9 0-16-7-16-16z"/>
+    <path d="M310 144c0-9 7-16 16-16h18c9 0 16 7 16 16v224c0 9-7 16-16 16h-18c-9 0-16-7-16-16z"/>
+    <path id="increment" fill="#c56f4b" d="M113 328c-8-4-11-13-7-21l8-16c4-8 13-11 21-7l264 130c8 4 11 13 7 21l-8 16c-4 8-13 11-21 7z"/>
+  </g>
+</svg>
