@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'tally-shell-';
-const CACHE_NAME = `${CACHE_PREFIX}v10`;
+const CACHE_NAME = `${CACHE_PREFIX}v11`;
 const NAVIGATION_TIMEOUT_MS = 3000;
 const SHELL_ASSETS = [
   './',

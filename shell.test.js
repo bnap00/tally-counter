@@ -561,6 +561,19 @@ test('keeps browser theme color synchronized with the resolved theme', async () 
   assert.match(js, /colorScheme\.addEventListener\(['"]change['"]/);
 });
 
+test('restricts the shell to same-origin resources with a content security policy', async () => {
+  const html = await source('index.html');
+  const csp = html.match(/<meta\b[^>]*http-equiv=["']Content-Security-Policy["'][^>]*content=["']([^"']*(?:'[^']*'[^"']*)*)["']/i)?.[1];
+
+  assert.ok(csp, 'index.html must declare a CSP meta tag');
+  assert.match(csp, /default-src 'none'/);
+  assert.match(csp, /script-src 'self'(;|$)/);
+  assert.match(csp, /worker-src 'self'/);
+  assert.match(csp, /manifest-src 'self'/);
+  assert.doesNotMatch(csp, /unsafe-inline|unsafe-eval/);
+  assert.doesNotMatch(html, /<script(?![^>]*\bsrc=)[^>]*>|\son[a-z]+=|\sstyle=/i, 'shell must not rely on inline scripts, handlers, or styles');
+});
+
 test('ships a valid standalone manifest with installable icons', async () => {
   const manifest = JSON.parse(await source('manifest.webmanifest'));
 
@@ -588,7 +601,7 @@ test('ships a valid standalone manifest with installable icons', async () => {
   );
 });
 
-test('precache worker lists the complete dependency-free v10 shell', async () => {
+test('precache worker lists the complete dependency-free v11 shell', async () => {
   const worker = await source('service-worker.js');
   const expectedAssets = [
     './',
@@ -607,7 +620,7 @@ test('precache worker lists the complete dependency-free v10 shell', async () =>
   ];
 
   assert.match(worker, /const CACHE_PREFIX\s*=\s*['"]tally-/);
-  assert.match(worker, /const CACHE_NAME\s*=\s*`\$\{CACHE_PREFIX\}v10`/);
+  assert.match(worker, /const CACHE_NAME\s*=\s*`\$\{CACHE_PREFIX\}v11`/);
   for (const asset of expectedAssets) {
     assert.ok(worker.includes(`'${asset}'`) || worker.includes(`"${asset}"`), `missing ${asset}`);
   }
@@ -618,7 +631,7 @@ test('precache worker lists the complete dependency-free v10 shell', async () =>
   const harness = createWorkerHarness(worker);
   await harness.install();
   for (const asset of expectedAssets) {
-    assert.equal(await harness.cachedText('tally-shell-v10', asset), `precache:${asset}`);
+    assert.equal(await harness.cachedText('tally-shell-v11', asset), `precache:${asset}`);
   }
 });
 
@@ -644,7 +657,7 @@ test('non-app navigations are not intercepted and cannot replace cached index', 
   const worker = await source('service-worker.js');
   const harness = createWorkerHarness(worker, {
     initialCaches: {
-      'tally-shell-v10': [['./index.html', new Response('known app index')]],
+      'tally-shell-v11': [['./index.html', new Response('known app index')]],
     },
     fetch: async (request) => new Response(`route:${new URL(request.url).pathname}`),
   });
@@ -658,14 +671,14 @@ test('non-app navigations are not intercepted and cannot replace cached index', 
   await Promise.all(events.filter((event) => event.responded).map((event) => event.response));
   assert.ok(events.every((event) => !event.responded), 'non-app navigations must not call respondWith');
   assert.equal(harness.fetchCalls.length, 0, 'non-app navigations must bypass worker fetch');
-  assert.equal(await harness.cachedText('tally-shell-v10', './index.html'), 'known app index');
+  assert.equal(await harness.cachedText('tally-shell-v11', './index.html'), 'known app index');
 });
 
 test('listed static assets remain cache-first', async () => {
   const worker = await source('service-worker.js');
   const harness = createWorkerHarness(worker, {
     initialCaches: {
-      'tally-shell-v10': [['./style.css', new Response('cached current stylesheet')]],
+      'tally-shell-v11': [['./style.css', new Response('cached current stylesheet')]],
     },
     fetch: async () => new Response('network stylesheet'),
   });
@@ -684,12 +697,12 @@ test('old worker serves a coherent cached shell while a new deployment waits', a
   const worker = await source('service-worker.js');
   const harness = createWorkerHarness(worker, {
     initialCaches: {
-      'tally-shell-v10': [
+      'tally-shell-v11': [
         ['./index.html', new Response('old HTML')],
         ['./app.js', new Response('old JS')],
         ['./style.css', new Response('old CSS')],
       ],
-      'tally-shell-v11': [['./index.html', new Response('waiting HTML')]],
+      'tally-shell-v12': [['./index.html', new Response('waiting HTML')]],
     },
     fetch: async (request) => new Response(`new deployment:${request.url}`),
   });
@@ -704,15 +717,15 @@ test('old worker serves a coherent cached shell while a new deployment waits', a
     assert.equal(await (await event.response).text(), expected);
   }
   assert.equal(harness.fetchCalls.length, 0, 'a complete installed shell must not consult the new deployment');
-  assert.equal(await harness.cachedText('tally-shell-v10', './index.html'), 'old HTML');
-  assert.equal(harness.stores.has('tally-shell-v11'), true, 'waiting cache must remain untouched');
+  assert.equal(await harness.cachedText('tally-shell-v11', './index.html'), 'old HTML');
+  assert.equal(harness.stores.has('tally-shell-v12'), true, 'waiting cache must remain untouched');
 });
 
 test('successful navigation is cache-first and preserves cached index', async () => {
   const worker = await source('service-worker.js');
   const harness = createWorkerHarness(worker, {
     initialCaches: {
-      'tally-shell-v10': [['./index.html', new Response('cached index')]],
+      'tally-shell-v11': [['./index.html', new Response('cached index')]],
     },
     fetch: async () => new Response('fresh index'),
   });
@@ -723,7 +736,7 @@ test('successful navigation is cache-first and preserves cached index', async ()
   });
 
   assert.equal(await (await event.response).text(), 'cached index');
-  assert.equal(await harness.cachedText('tally-shell-v10', './index.html'), 'cached index');
+  assert.equal(await harness.cachedText('tally-shell-v11', './index.html'), 'cached index');
   assert.equal(harness.fetchCalls.length, 0);
 });
 
@@ -738,14 +751,14 @@ test('navigation with no cached index uses network without caching arbitrary HTM
 
   assert.equal(await (await event.response).text(), 'fresh index');
   assert.equal(harness.fetchCalls.length, 1);
-  assert.equal(await harness.cachedText('tally-shell-v10', './index.html'), undefined);
+  assert.equal(await harness.cachedText('tally-shell-v11', './index.html'), undefined);
 });
 
 test('offline navigation serves cached index without fetching', async () => {
   const worker = await source('service-worker.js');
   const harness = createWorkerHarness(worker, {
     initialCaches: {
-      'tally-shell-v10': [['./index.html', new Response('cached index')]],
+      'tally-shell-v11': [['./index.html', new Response('cached index')]],
     },
     fetch: async () => Promise.reject(new Error('offline')),
   });
@@ -762,7 +775,7 @@ test('server failure cannot replace an installed cached index', async () => {
   const worker = await source('service-worker.js');
   const harness = createWorkerHarness(worker, {
     initialCaches: {
-      'tally-shell-v10': [['./index.html', new Response('cached index')]],
+      'tally-shell-v11': [['./index.html', new Response('cached index')]],
     },
     fetch: async () => new Response('server error', { status: 500 }),
   });
@@ -773,14 +786,14 @@ test('server failure cannot replace an installed cached index', async () => {
   });
 
   assert.equal(await (await event.response).text(), 'cached index');
-  assert.equal(await harness.cachedText('tally-shell-v10', './index.html'), 'cached index');
+  assert.equal(await harness.cachedText('tally-shell-v11', './index.html'), 'cached index');
 });
 
 test('query-string app navigations use cached index when offline', async () => {
   const worker = await source('service-worker.js');
   const harness = createWorkerHarness(worker, {
     initialCaches: {
-      'tally-shell-v10': [['./index.html', new Response('cached index')]],
+      'tally-shell-v11': [['./index.html', new Response('cached index')]],
     },
     fetch: async () => Promise.reject(new Error('offline')),
   });
@@ -835,7 +848,7 @@ test('navigation with an empty cache returns an error for offline or failed netw
     });
     assert.equal((await event.response).type, 'error');
     assert.equal(harness.fetchCalls.length, 1);
-    assert.equal(await harness.cachedText('tally-shell-v10', './index.html'), undefined);
+    assert.equal(await harness.cachedText('tally-shell-v11', './index.html'), undefined);
   }
 });
 
@@ -843,7 +856,7 @@ test('activation removes all prior app caches without deleting unrelated caches'
   const worker = await source('service-worker.js');
   const initialCaches = {
     'other-app-v1': [['./style.css', new Response('unrelated stylesheet')]],
-    'tally-shell-v10': [['./index.html', new Response('current index')]],
+    'tally-shell-v11': [['./index.html', new Response('current index')]],
   };
   for (let version = 1; version <= 9; version += 1) {
     initialCaches[`tally-shell-v${version}`] = [['./style.css', new Response(`stale v${version}`)]];
@@ -856,7 +869,7 @@ test('activation removes all prior app caches without deleting unrelated caches'
     assert.equal(harness.stores.has(`tally-shell-v${version}`), false);
   }
   assert.equal(harness.stores.has('other-app-v1'), true);
-  assert.equal(await harness.cachedText('tally-shell-v10', './index.html'), 'current index');
+  assert.equal(await harness.cachedText('tally-shell-v11', './index.html'), 'current index');
   assert.equal(harness.claimed, true);
 });
 
